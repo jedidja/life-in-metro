@@ -1,0 +1,28 @@
+﻿<Page
+    x:Class="LifeInMetro.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:LifeInMetro"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock FontSize="24">Current Frame:</TextBlock>
+            <TextBlock FontSize="24" Margin="10 0 0 0" Grid.Column="1" Text="{Binding Generation}"/>
+        </Grid>
+
+        <Canvas Grid.Row="1" x:Name="LifeCanvas" Width="480" Height="480"/>
+    </Grid>
+</Page>
