@@ -1,75 +1,229 @@
 ﻿using System;
+using Windows.UI.Xaml.Controls;
 
 namespace LifeInMetro
 {
     public class CellMap
     {
         private byte[] cells;
-        private int width;
-        private int height;
+        private byte[] tempCells;
 
-        public CellMap(int height, int width)
+        private uint width;
+        private uint height;
+
+        private int lengthInBytes;
+
+        private readonly CellMapDisplay display;
+
+        public CellMap(uint height, uint width, Canvas canvas, int cellSize)
         {
             this.width = width;
             this.height = height;
 
-            cells = new byte[width * height];
+            lengthInBytes = (int)(width * height);
+
+            cells = new byte[lengthInBytes];
+            tempCells = new byte[lengthInBytes];
+
+            for (int c = 0; c < width * height; c++)
+            {
+                cells[c] = 0;
+            }
+
+            display = new CellMapDisplay(canvas, width, cellSize);
+            InitDisplay();
         }
 
-        public void CopyCells(CellMap sourcemap)
+        public void SetCell(uint x, uint y)
         {
-            Array.Copy(sourcemap.cells, cells, sourcemap.cells.Length);
+            int w = (int)width;
+            int h = (int)height;
+
+            int xoleft, xoright, yoabove, yobelow;
+
+            if (x == 0)
+            {
+                xoleft = w - 1;
+            }
+            else
+            {
+                xoleft = -1;
+            }
+
+            if (y == 0)
+            {
+                yoabove = lengthInBytes - w;
+            }
+            else
+            {
+                yoabove = -w;
+            }
+
+            if (x == (w - 1))
+            {
+                xoright = -(w - 1);
+            }
+            else
+            {
+                xoright = 1;
+            }
+
+            if (y == (h - 1))
+            {
+                yobelow = -(lengthInBytes - w);
+            }
+            else
+            {
+                yobelow = w;
+            }
+
+            uint cellIndex = width * y + x;
+
+            cells[cellIndex] |= 0x01;
+            cells[cellIndex + yoabove + xoleft] += 2;
+            cells[cellIndex + yoabove] += 2;
+            cells[cellIndex + yoabove + xoright] += 2;
+            cells[cellIndex + xoleft] += 2;
+            cells[cellIndex + xoright] += 2;
+            cells[cellIndex + yobelow + xoleft] += 2;
+            cells[cellIndex + yobelow] += 2;
+            cells[cellIndex + yobelow + xoright] += 2;
         }
 
-        public void SetCell(int x, int y)
+        public void ClearCell(uint x, uint y)
         {
-            cells[width * x + y] = 1;
-        }
+            int w = (int)width;
+            int h = (int)height;
 
-        public void ClearCell(int x, int y)
-        {
-            cells[width * x + y] = 0;
+            int xoleft, xoright, yoabove, yobelow;
+
+            if (x == 0)
+            {
+                xoleft = w - 1;
+            }
+            else
+            {
+                xoleft = -1;
+            }
+
+            if (y == 0)
+            {
+                yoabove = lengthInBytes - w;
+            }
+            else
+            {
+                yoabove = -w;
+            }
+
+            if (x == (w - 1))
+            {
+                xoright = -(w - 1);
+            }
+            else
+            {
+                xoright = 1;
+            }
+
+            if (y == (h - 1))
+            {
+                yobelow = -(lengthInBytes - w);
+            }
+            else
+            {
+                yobelow = w;
+            }
+
+            uint cellIndex = width * y + x;
+
+            cells[cellIndex] &= 0xFE;
+            cells[cellIndex + yoabove + xoleft] -= 2;
+            cells[cellIndex + yoabove] -= 2;
+            cells[cellIndex + yoabove + xoright] -= 2;
+            cells[cellIndex + xoleft] -= 2;
+            cells[cellIndex + xoright] -= 2;
+            cells[cellIndex + yobelow + xoleft] -= 2;
+            cells[cellIndex + yobelow] -= 2;
+            cells[cellIndex + yobelow + xoright] -= 2;
         }
 
         public int GetCellState(int x, int y)
         {
-            while (x < 0) x += width;
-            while (x >= width) x -= width;
-            while (y < 0) y += height;
-            while (y >= height) y -= height;
-
-            return cells[width * x + y];
+            return cells[y * width + x] & 0x01;
         }
 
-        public void NextGeneration(CellMap destination, CellMapDisplay display)
+        public void NextGeneration()
         {
-            for (var y = 0; y < height; y++)
-            {
-                for (var x = 0; x < height; x++)
-                {
-                    // Figure out how many neighbours this cell has
-                    var neighbourCount = GetCellState(x - 1, y - 1) + GetCellState(x, y - 1) +
-                                         GetCellState(x + 1, y - 1) + GetCellState(x - 1, y) +
-                                         GetCellState(x + 1, y) + GetCellState(x - 1, y + 1) +
-                                         GetCellState(x, y + 1) + GetCellState(x + 1, y + 1);
+            uint x, y;
+            int count;
+            uint h = height, w = width;
+            uint cellIndex;
 
-                    if (GetCellState(x, y) == 1)
+            Array.Copy(cells, tempCells, lengthInBytes);
+
+            cellIndex = 0;
+
+            for (y = 0; y < h; y++)
+            {
+                x = 0;
+                do
+                {
+                    //  repeat  for  each  cell  in  row 
+                    //  Zip  quickly  through  as  many  off-cells  with  no 
+                    //  neighbors  as  possible 
+                    while (tempCells[cellIndex] == 0)
                     {
-                        // The cell is on; does it stay on?
-                        if (neighbourCount != 2 && neighbourCount != 3)
+                        cellIndex += 1;
+
+                        if (++x >= w)
                         {
-                            destination.ClearCell(x, y);
+                            goto rowDone;
+                        }
+                    }
+
+                    // Found  a cell  that's  either  on  or  has  on-neighbors, 
+                    // so  see  if  its  state  needs  to be changed
+                    count = tempCells[cellIndex] >> 1;
+
+                    if ((tempCells[cellIndex] & 0x01) == 0x01)
+                    {
+                        // Cell is on; turn it off if it doesn't have 2 or 3 neighbours
+                        if (count != 2 && count != 3)
+                        {
+                            ClearCell(x, y);
                             display.DrawCell(x, y, false);
                         }
                     }
                     else
                     {
-                        // The cell is off; does it turn on?
-                        if (neighbourCount == 3)
+                        // Cell is off; turn it on on if it has exactly 3 neighbours
+                        if (count == 3)
                         {
-                            destination.SetCell(x, y);
+                            SetCell(x, y);
                             display.DrawCell(x, y, true);
                         }
+                    }
+
+                    // Advance to the next cell
+                    cellIndex += 1;
+                } while (++x < w);
+            rowDone: ;
+            }
+        }
+
+        private void InitDisplay()
+        {
+            var r = new Random();
+
+            for (uint y = 0; y < height; y++)
+            {
+                for (uint x = 0; x < width; x++)
+                {
+                    bool on = r.Next(100) < 52;
+                    display.AddCell(x, y, on);
+
+                    if (on)
+                    {
+                        SetCell(x, y);
                     }
                 }
             }

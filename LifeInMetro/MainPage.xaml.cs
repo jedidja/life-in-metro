@@ -18,8 +18,6 @@ namespace LifeInMetro
 
         private readonly LifeViewModel viewModel;
         private readonly CellMap currentMap;
-        private readonly CellMap nextMap;
-        private readonly CellMapDisplay cellMapDisplay;
 
         private readonly DispatcherTimer timer;
 
@@ -30,20 +28,7 @@ namespace LifeInMetro
             viewModel = new LifeViewModel();
             DataContext = viewModel;
 
-            cellMapDisplay = new CellMapDisplay(LifeCanvas, MapWidth, MapHeight, CellSize);
-
-            currentMap = new CellMap(MapHeight, MapWidth);
-            nextMap = new CellMap(MapHeight, MapWidth);
-
-            var r = new Random();
-
-            var initLength = MapWidth * MapHeight / 2;
-            do
-            {
-                nextMap.SetCell(r.Next(MapWidth), r.Next(MapHeight));
-            } while (--initLength != 0);
-
-            currentMap.CopyCells(nextMap);
+            currentMap = new CellMap(MapHeight, MapWidth, LifeCanvas, CellSize);
 
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(1000 / 18.2);
@@ -62,9 +47,8 @@ namespace LifeInMetro
 
         private void timer_Tick(object sender, object e)
         {
+            currentMap.NextGeneration();
             viewModel.Generation += 1;
-            currentMap.NextGeneration(nextMap, cellMapDisplay);
-            currentMap.CopyCells(nextMap);
         }
     }
 }

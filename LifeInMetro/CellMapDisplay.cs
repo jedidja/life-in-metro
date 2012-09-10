@@ -9,45 +9,42 @@ namespace LifeInMetro
     public class CellMapDisplay
     {
         private readonly Canvas canvas;
-        private readonly int numberCellsAcross;
-        private readonly int numberCellsDown;
+        private readonly uint numberCellsAcross;
+        private readonly int cellSize;
 
-        private readonly Dictionary<int, Rectangle> cellIndexDisplayMap;
+        private readonly Dictionary<uint, Rectangle> cellIndexDisplayMap;
 
         private readonly SolidColorBrush blackBrush;
         private readonly SolidColorBrush whiteBrush;
 
-        public CellMapDisplay(Canvas canvas, int numberCellsAcross, int numberCellsDown, int cellSize)
+        public CellMapDisplay(Canvas canvas, uint numberCellsAcross, int cellSize)
         {
             this.canvas = canvas;
             this.numberCellsAcross = numberCellsAcross;
-            this.numberCellsDown = numberCellsDown;
+            this.cellSize = cellSize;
 
-            cellIndexDisplayMap = new Dictionary<int, Rectangle>();
-            
+            cellIndexDisplayMap = new Dictionary<uint, Rectangle>();
+
             blackBrush = new SolidColorBrush(Colors.Black);
             whiteBrush = new SolidColorBrush(Colors.White);
-
-            for (int y = 0; y < numberCellsDown; y++)
-            {
-                for (int x = 0; x < numberCellsAcross; x++)
-                {
-                    var cell = new Rectangle();
-                    cell.Width = cellSize;
-                    cell.Height = cellSize;
-
-                    cell.Fill = new SolidColorBrush(Colors.Black);
-
-                    Canvas.SetLeft(cell, x * cellSize);
-                    Canvas.SetTop(cell, y * cellSize);
-                    canvas.Children.Add(cell);
-
-                    cellIndexDisplayMap[y * numberCellsAcross + x] = cell;
-                }
-            }
         }
 
-        public void DrawCell(int x, int y, bool on)
+        public void AddCell(uint x, uint y, bool on)
+        {
+            var cell = new Rectangle();
+            cell.Width = cellSize;
+            cell.Height = cellSize;
+
+            cell.Fill = on ? whiteBrush : blackBrush;
+
+            Canvas.SetLeft(cell, x * cellSize);
+            Canvas.SetTop(cell, y * cellSize);
+            canvas.Children.Add(cell);
+
+            cellIndexDisplayMap[y * numberCellsAcross + x] = cell;
+        }
+
+        public void DrawCell(uint x, uint y, bool on)
         {
             var cellRectangle = cellIndexDisplayMap[y * numberCellsAcross + x];
 
