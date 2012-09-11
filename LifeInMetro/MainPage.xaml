@@ -23,6 +23,6 @@
             <TextBlock FontSize="24" Margin="10 0 0 0" Grid.Column="1" Text="{Binding Generation}"/>
         </Grid>
 
-        <Canvas Grid.Row="1" x:Name="LifeCanvas" Width="480" Height="480"/>
+        <Image Grid.Row="1" Width="480" Height="480" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="GameOfLifeImage" />
     </Grid>
 </Page>

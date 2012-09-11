@@ -15,7 +15,7 @@ namespace LifeInMetro
 
         private readonly CellMapDisplay display;
 
-        public CellMap(uint height, uint width, Canvas canvas, int cellSize)
+        public CellMap(uint height, uint width, Image image, int cellSize)
         {
             this.width = width;
             this.height = height;
@@ -30,7 +30,7 @@ namespace LifeInMetro
                 cells[c] = 0;
             }
 
-            display = new CellMapDisplay(canvas, width, cellSize);
+            display = new CellMapDisplay(image, width, height, cellSize);
             InitDisplay();
         }
 
@@ -153,6 +153,8 @@ namespace LifeInMetro
 
         public void NextGeneration()
         {
+            display.UpdateScreen();
+
             uint x, y;
             int count;
             uint h = height, w = width;
@@ -219,7 +221,7 @@ namespace LifeInMetro
                 for (uint x = 0; x < width; x++)
                 {
                     bool on = r.Next(100) < 52;
-                    display.AddCell(x, y, on);
+                    display.DrawCell(x, y, true);
 
                     if (on)
                     {

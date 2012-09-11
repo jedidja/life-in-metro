@@ -28,7 +28,7 @@ namespace LifeInMetro
             viewModel = new LifeViewModel();
             DataContext = viewModel;
 
-            currentMap = new CellMap(MapHeight, MapWidth, LifeCanvas, CellSize);
+            currentMap = new CellMap(MapHeight, MapWidth, GameOfLifeImage, CellSize);
 
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(1000 / 18.2);
