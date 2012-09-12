@@ -1,4 +1,6 @@
 ﻿using System;
+using NotificationsExtensions.TileContent;
+using Windows.UI.Notifications;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -17,7 +19,7 @@ namespace LifeInMetro
         private const int CellSize = 5;
 
         private readonly LifeViewModel viewModel;
-        private readonly CellMap currentMap;
+        private readonly CellMap cellMap;
 
         private readonly DispatcherTimer timer;
 
@@ -28,10 +30,10 @@ namespace LifeInMetro
             viewModel = new LifeViewModel();
             DataContext = viewModel;
 
-            currentMap = new CellMap(MapHeight, MapWidth, GameOfLifeImage, CellSize);
+            cellMap = new CellMap(MapHeight, MapWidth, GameOfLifeImage, CellSize);
 
             timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(1000 / 18.2);
+            timer.Interval = TimeSpan.FromMilliseconds(1000 / 10);
             timer.Tick += timer_Tick;
         }
 
@@ -47,8 +49,16 @@ namespace LifeInMetro
 
         private void timer_Tick(object sender, object e)
         {
-            currentMap.NextGeneration();
+            cellMap.NextGeneration();
             viewModel.Generation += 1;
+
+            var tileContent = TileContentFactory.CreateTileSquareText03();
+
+            tileContent.TextBody1.Text = string.Format("Generation: {0}", viewModel.Generation);
+            tileContent.TextBody2.Text = string.Format("% Alive: {0}", cellMap.PercentageOfAliveCells);
+
+            var tileNotification = tileContent.CreateNotification();
+            TileUpdateManager.CreateTileUpdaterForApplication().Update(tileNotification);
         }
     }
 }

@@ -5,13 +5,15 @@ namespace LifeInMetro
 {
     public class CellMap
     {
-        private byte[] cells;
-        private byte[] tempCells;
+        private readonly byte[] cells;
+        private readonly byte[] tempCells;
 
-        private uint width;
-        private uint height;
+        private readonly uint width;
+        private readonly uint height;
 
-        private int lengthInBytes;
+        private readonly int lengthInBytes;
+
+        private int numberOfAliveCells;
 
         private readonly CellMapDisplay display;
 
@@ -32,6 +34,14 @@ namespace LifeInMetro
 
             display = new CellMapDisplay(image, width, height, cellSize);
             InitDisplay();
+        }
+
+        public int PercentageOfAliveCells
+        {
+            get
+            {
+                return (int)(numberOfAliveCells * 100 / width / height);
+            }
         }
 
         public void SetCell(uint x, uint y)
@@ -88,6 +98,8 @@ namespace LifeInMetro
             cells[cellIndex + yobelow + xoleft] += 2;
             cells[cellIndex + yobelow] += 2;
             cells[cellIndex + yobelow + xoright] += 2;
+
+            numberOfAliveCells += 1;
         }
 
         public void ClearCell(uint x, uint y)
@@ -144,6 +156,8 @@ namespace LifeInMetro
             cells[cellIndex + yobelow + xoleft] -= 2;
             cells[cellIndex + yobelow] -= 2;
             cells[cellIndex + yobelow + xoright] -= 2;
+
+            numberOfAliveCells -= 1;
         }
 
         public int GetCellState(int x, int y)
