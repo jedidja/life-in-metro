@@ -235,7 +235,7 @@ namespace LifeInMetro
                 for (uint x = 0; x < width; x++)
                 {
                     bool on = r.Next(100) < 52;
-                    display.DrawCell(x, y, true);
+                    display.DrawCell(x, y, on);
 
                     if (on)
                     {
