@@ -16,7 +16,7 @@
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="LifeInMetro.App">
       <VisualElements DisplayName="Life In Metro" Logo="Assets\Logo.png" SmallLogo="Assets\SmallLogo.png" Description="A Metro implementation of Conway's Game of Life" ForegroundText="light" BackgroundColor="#38864D">
-        <DefaultTile ShowName="allLogos" />
+        <DefaultTile ShowName="allLogos" WideLogo="Assets\WideLogo.png" />
         <SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#FFFFFF" />
         <InitialRotationPreference>
           <Rotation Preference="landscape" />

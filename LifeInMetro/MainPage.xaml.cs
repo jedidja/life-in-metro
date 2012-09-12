@@ -52,13 +52,28 @@ namespace LifeInMetro
             cellMap.NextGeneration();
             viewModel.Generation += 1;
 
-            var tileContent = TileContentFactory.CreateTileSquareText03();
+            UpdateLiveTilesIfRequired();
+        }
 
-            tileContent.TextBody1.Text = string.Format("Generation: {0}", viewModel.Generation);
-            tileContent.TextBody2.Text = string.Format("% Alive: {0}", cellMap.PercentageOfAliveCells);
+        private void UpdateLiveTilesIfRequired()
+        {
+            if (viewModel.Generation % 50 == 0)
+            {
+                string line1 = string.Format("Generation: {0}", viewModel.Generation);
+                string line2 = string.Format("% Alive: {0}", cellMap.PercentageOfAliveCells);
 
-            var tileNotification = tileContent.CreateNotification();
-            TileUpdateManager.CreateTileUpdaterForApplication().Update(tileNotification);
+                var tileContentWide = TileContentFactory.CreateTileWideText05();
+                tileContentWide.TextBody1.Text = line1;
+                tileContentWide.TextBody2.Text = line2;
+
+                var tileContentSquare = TileContentFactory.CreateTileSquareText03();
+                tileContentSquare.TextBody1.Text = line1;
+                tileContentSquare.TextBody2.Text = line2;
+                tileContentWide.SquareContent = tileContentSquare;
+
+                var tileNotification = tileContentWide.CreateNotification();
+                TileUpdateManager.CreateTileUpdaterForApplication().Update(tileNotification);
+            }
         }
     }
 }
