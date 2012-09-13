@@ -16,6 +16,8 @@ namespace LifeInMetro
         private int numberOfAliveCells;
 
         private readonly CellMapDisplay display;
+        private readonly DeterminesCellNeighbours determinesCellNeighbours;
+
 
         public CellMap(uint height, uint width, Image image, int cellSize)
         {
@@ -32,6 +34,8 @@ namespace LifeInMetro
                 cells[c] = 0;
             }
 
+            determinesCellNeighbours = new DeterminesCellNeighbours((int)width, (int)height);
+
             display = new CellMapDisplay(image, width, height, cellSize);
             InitDisplay();
         }
@@ -46,116 +50,24 @@ namespace LifeInMetro
 
         public void SetCell(uint x, uint y)
         {
-            int w = (int)width;
-            int h = (int)height;
+            cells[width * y + x] |= 0x01;
 
-            int xoleft, xoright, yoabove, yobelow;
-
-            if (x == 0)
+            foreach (var neighbour in determinesCellNeighbours.GetNeighbourIndexes(x, y))
             {
-                xoleft = w - 1;
+                cells[neighbour] += 2;
             }
-            else
-            {
-                xoleft = -1;
-            }
-
-            if (y == 0)
-            {
-                yoabove = lengthInBytes - w;
-            }
-            else
-            {
-                yoabove = -w;
-            }
-
-            if (x == (w - 1))
-            {
-                xoright = -(w - 1);
-            }
-            else
-            {
-                xoright = 1;
-            }
-
-            if (y == (h - 1))
-            {
-                yobelow = -(lengthInBytes - w);
-            }
-            else
-            {
-                yobelow = w;
-            }
-
-            uint cellIndex = width * y + x;
-
-            cells[cellIndex] |= 0x01;
-            cells[cellIndex + yoabove + xoleft] += 2;
-            cells[cellIndex + yoabove] += 2;
-            cells[cellIndex + yoabove + xoright] += 2;
-            cells[cellIndex + xoleft] += 2;
-            cells[cellIndex + xoright] += 2;
-            cells[cellIndex + yobelow + xoleft] += 2;
-            cells[cellIndex + yobelow] += 2;
-            cells[cellIndex + yobelow + xoright] += 2;
 
             numberOfAliveCells += 1;
         }
 
         public void ClearCell(uint x, uint y)
         {
-            int w = (int)width;
-            int h = (int)height;
+            cells[width * y + x] &= 0xFE;
 
-            int xoleft, xoright, yoabove, yobelow;
-
-            if (x == 0)
+            foreach (var neighbour in determinesCellNeighbours.GetNeighbourIndexes(x, y))
             {
-                xoleft = w - 1;
+                cells[neighbour] -= 2;
             }
-            else
-            {
-                xoleft = -1;
-            }
-
-            if (y == 0)
-            {
-                yoabove = lengthInBytes - w;
-            }
-            else
-            {
-                yoabove = -w;
-            }
-
-            if (x == (w - 1))
-            {
-                xoright = -(w - 1);
-            }
-            else
-            {
-                xoright = 1;
-            }
-
-            if (y == (h - 1))
-            {
-                yobelow = -(lengthInBytes - w);
-            }
-            else
-            {
-                yobelow = w;
-            }
-
-            uint cellIndex = width * y + x;
-
-            cells[cellIndex] &= 0xFE;
-            cells[cellIndex + yoabove + xoleft] -= 2;
-            cells[cellIndex + yoabove] -= 2;
-            cells[cellIndex + yoabove + xoright] -= 2;
-            cells[cellIndex + xoleft] -= 2;
-            cells[cellIndex + xoright] -= 2;
-            cells[cellIndex + yobelow + xoleft] -= 2;
-            cells[cellIndex + yobelow] -= 2;
-            cells[cellIndex + yobelow + xoright] -= 2;
 
             numberOfAliveCells -= 1;
         }
@@ -206,7 +118,7 @@ namespace LifeInMetro
                         if (count != 2 && count != 3)
                         {
                             ClearCell(x, y);
-                            display.DrawCell(x, y, false);
+                            display.ClearCell(x, y);
                         }
                     }
                     else
@@ -215,7 +127,7 @@ namespace LifeInMetro
                         if (count == 3)
                         {
                             SetCell(x, y);
-                            display.DrawCell(x, y, true);
+                            display.SpawnCell(x, y);
                         }
                     }
 
@@ -235,11 +147,15 @@ namespace LifeInMetro
                 for (uint x = 0; x < width; x++)
                 {
                     bool on = r.Next(100) < 52;
-                    display.DrawCell(x, y, on);
 
                     if (on)
                     {
+                        display.InitCell(x, y, r.Next(100) < 51);
                         SetCell(x, y);
+                    }
+                    else
+                    {
+                        display.ClearCell(x, y);
                     }
                 }
             }
